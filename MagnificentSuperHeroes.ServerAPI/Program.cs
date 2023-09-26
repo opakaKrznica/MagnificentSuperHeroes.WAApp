@@ -1,6 +1,14 @@
+using MagnificentSuperHeroes.ServerAPI.MSHBase;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+var dbConnectionString = builder.Configuration.
+    GetValue<string>("ConnectionString");
 
 // Add services to the container.
+builder.Services.AddDbContext<MagSuperHeroContext>
+    (options => options.
+    UseSqlServer(dbConnectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
