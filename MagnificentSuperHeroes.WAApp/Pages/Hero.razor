@@ -1,0 +1,173 @@
+﻿@page "/hero"
+@page "/hero/{id:int}"
+
+@inject ISuperHeroesService SuperHeroesService
+@inject NavigationManager NavManager
+
+
+
+@if(Id == null)
+{
+    <PageTitle>Create a new Super Hero</PageTitle>
+    <h3>Create a new Super Hero</h3>
+}
+else
+{
+    <PageTitle>Edit @hero.HeroName</PageTitle>
+    <h3>Edit @hero.HeroName</h3>
+}
+
+<EditForm Model="hero" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <MudCard>
+        <MudCardContent>
+            <MudTextField Class="mb-6 " Label="Hero Name" @bind-Value="hero.HeroName"
+                          For="@(() => hero.HeroName)"></MudTextField>
+           @* <MudNumericField Class="mb-6 " Label="Id" @bind-Value="hero.Id"
+                             For="@(() => hero.Id)"
+                             HelperText="Minimum value is 1."></MudNumericField>
+*@
+            <MudTextField Class="mb-6 "  Label="Name" @bind-Value="hero.Name"
+                          For="@(() => hero.Name)"></MudTextField>
+            <MudTextField Class="mb-6 " Label="Bio" @bind-Value="hero.Bio"
+                          For="@(() => hero.Bio)"
+                          Lines="4"></MudTextField>
+            <MudDatePicker Class="mb-6 " Label="Birth Date" @bind-Date="hero.BirthDate" Color="Color.Secondary" ReadOnly="false"></MudDatePicker>
+            <br />
+            <MudText Class="mb-4" Style="font-size: 14px">Team</MudText>
+            <MudRadioGroup Class="mb-6 ps-4" @bind-SelectedOption="hero.TeamId">
+                @foreach (var team in SuperHeroesService.Teams)
+                {
+                    <MudRadio Option="team.Id" Color="Color.Primary" Size="Size.Small">@team.Name</MudRadio>
+                }
+            </MudRadioGroup>
+
+            <MudText Class="mb-4" Style="font-size: 14px">Comic</MudText>
+            <MudRadioGroup Class="mb-6 ps-4" @bind-SelectedOption="hero.ComicId">
+                @foreach (var comic in SuperHeroesService.Comics)
+                {
+                    <MudRadio Option="comic.Id" Color="Color.Primary" Size="Size.Small">@comic.Name</MudRadio>
+                }
+            </MudRadioGroup>
+            
+            <MudSelect  Class="mb-6" Label="Difficulty" @bind-Value="hero.DifficultyId">
+                @foreach (var difficulty in SuperHeroesService.Difficulties)
+                {
+                    <MudSelectItem Value="difficulty.Id">@difficulty.Title</MudSelectItem>
+                }
+            </MudSelect>
+           
+            <br />
+            <MudCheckBox Class="mb-6 " Label="Ready to Fight" @bind-Checked="@hero.IsReadyToFight"
+                         Color="Color.Primary"></MudCheckBox>            
+            <br />
+            <InputFile Class="invisible" id="fileInput" OnChange="OnFileChange" />
+            <br />
+            <MudButton HtmlTag="label"
+            Variant="Variant.Filled"
+            Color="Color.Primary"
+            StartIcon="@Icons.Filled.CloudUpload"
+            for="fileInput">
+            Upload Image
+            </MudButton>
+                       <br />
+            <MudImage Src="@hero.Image" Elevation="25" Width="200" Height="150" Class="rounded my-2"></MudImage>
+        </MudCardContent>
+    </MudCard>  
+    <MudGrid>
+        <MudItem Class="xs-3">
+        <MudButton  ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Primary">
+            @btnTxt
+    </MudButton>
+    </MudItem>
+        @if (Id != null)
+    { 
+        <MudItem Class="xs-3">
+            <MudButton  @onclick="DeleteHero" Variant="Variant.Text" Color="Color.Primary">Delete SuperHero</MudButton>
+            </MudItem>
+        }
+        
+    <MudItem Class="xs-12"></MudItem>
+        <MudItem Class="xs-3">
+        <MudButton @onclick="Return" Variant="Variant.Text" Color="Color.Primary">Go Back</MudButton>
+    </MudItem>
+    </MudGrid>
+    <ValidationSummary />
+</EditForm>
+
+<p style="height:100px;"></p>
+
+ 
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    string btnTxt = string.Empty;
+    bool isNew = true;
+
+    SuperHero hero = new SuperHero 
+        {
+            Comic = new Comic(),
+            Difficulty = new Difficulty(),
+            Team = new Team()
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        btnTxt = Id == null ? "Create SuperHero" : "Update SuperHero";
+        await SuperHeroesService.GetComic();
+        await SuperHeroesService.GetDifficulty();
+        await SuperHeroesService.GetTeam();
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id == null)
+        {
+
+            hero.Comic = SuperHeroesService.Comics[0];
+            hero.ComicId = hero.Comic.Id;
+            hero.Team = SuperHeroesService.Teams[0];
+            hero.TeamId = hero.Team.Id;
+            hero.Difficulty = SuperHeroesService.Difficulties[0];
+            hero.DifficultyId = hero.Difficulty.Id;
+        }
+        else
+        {
+            hero = await SuperHeroesService.GetSingleHero((int)Id);            
+        }
+    }
+
+    public async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 200, 200);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        hero.Image = imageData;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id == null)
+        {
+            await SuperHeroesService.CreateSuperHero(hero);          
+        }
+        else
+        {
+            await SuperHeroesService.UpdateSuperHero(hero);            
+        }
+    }
+
+    private async Task DeleteHero()
+    {
+        await SuperHeroesService.DeleteSuperHero(hero.Id);
+    }
+
+    private async Task Return()
+    {
+        NavManager.NavigateTo("/superheroes");
+    }
+}
+
