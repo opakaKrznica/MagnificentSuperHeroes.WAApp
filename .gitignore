@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/MagnificentSuperHeroes.ServerAPI/bin/Debug/net7.0
+/MagnificentSuperHeroes.ServerAPI/obj
+/MagnificentSuperHeroes.WAApp/.vs
+/MagnificentSuperHeroes.WAApp/bin/Debug/net7.0
+/MagnificentSuperHeroes.WAApp/obj
