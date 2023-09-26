@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace MagnificentSuperHeroes.ServerAPI.MSHBase;
 
@@ -28,6 +29,6 @@ public partial class SuperHero
     public virtual Comic Comic { get; set; } = null!;
 
     public virtual Difficulty Difficulty { get; set; } = null!;
-
+   
     public virtual Team Team { get; set; } = null!;
 }

@@ -44,8 +44,8 @@ public partial class MagSuperHeroContext : DbContext
             entity.HasOne(d => d.Team).WithMany(p => p.SuperHeroes).HasForeignKey(d => d.TeamId);
         });
 
-        OnModelCreatingPartial(modelBuilder);
+        //OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+   // partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
