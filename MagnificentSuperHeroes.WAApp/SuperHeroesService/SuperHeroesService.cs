@@ -22,42 +22,24 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
         public List<Difficulty> Difficulties { get; set; } = new List<Difficulty>();
 
 
+        public async Task GetSuperHeroes()
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<SuperHero>>("https://localhost:7126/api/superheroes");
+            if (result != null)
+            {
+                SuperHeroes = result;
+            }
+        }
+
         public async Task CreateSuperHero(SuperHero hero)
         {
-            var result = await _httpClient.PostAsJsonAsync("api/superhero", hero);
+            var result = await _httpClient.PostAsJsonAsync("https://localhost:7126/api/superheroes", hero);
             await SetSuperHeroes(result);
         }
-
-        public async Task GetComic()
-        {
-            var result = await _httpClient.GetFromJsonAsync<List<Comic>>("api/superhero/comics");
-            if (result != null)
-            {
-                Comics = result;
-            }
-        }
-
-        public async Task GetTeam()
-        {
-            var result = await _httpClient.GetFromJsonAsync<List<Team>>("api/superhero/teams");
-            if (result != null)
-            {
-                Teams = result;
-            }
-        }
-
-        public async Task GetDifficulty()
-        {
-            var result = await _httpClient.GetFromJsonAsync<List<Difficulty>>("api/superhero/difficulties");
-            if (result != null)
-            {
-                Difficulties = result;
-            }
-        }
-
+        
         public async Task<SuperHero> GetSingleHero(int id)
         {
-            var result = await _httpClient.GetFromJsonAsync<SuperHero>($"api/superhero/{id}");
+            var result = await _httpClient.GetFromJsonAsync<SuperHero>($"https://localhost:7126/api/superheroes/{id}");
             if (result != null)
             {
                 return result;
@@ -65,26 +47,18 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
             throw new Exception("Hero not found!");
         }
 
-        public async Task GetSuperHeroes()
-        {
-            var result = await _httpClient.GetFromJsonAsync<List<SuperHero>>("api/superhero");
-            if (result != null)
-            {
-                SuperHeroes = result;
-            }
-        }
 
 
 
         public async Task DeleteSuperHero(int id)
         {
-            var result = await _httpClient.DeleteAsync($"api/superhero/{id}");
+            var result = await _httpClient.DeleteAsync($"https://localhost:7126/api/superheroes/{id}");
             await SetSuperHeroes(result);
         }
 
         public async Task UpdateSuperHero(SuperHero hero)
         {
-            var result = await _httpClient.PutAsJsonAsync($"api/superhero/{hero.Id}", hero);
+            var result = await _httpClient.PutAsJsonAsync($"https://localhost:7126/api/superheroes/{hero.Id}", hero);
             await SetSuperHeroes(result);
         }
 
@@ -93,6 +67,33 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
             var response = await result.Content.ReadFromJsonAsync<List<SuperHero>>();
             SuperHeroes = response;
             _navigationManager.NavigateTo("superheroes");
+        }
+
+        public async Task GetComic()
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<Comic>>("https://localhost:7126/api/superheroes/comics");
+            if (result != null)
+            {
+                Comics = result;
+            }
+        }
+
+        public async Task GetTeam()
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<Team>>("https://localhost:7126/api/superheroes/teams");
+            if (result != null)
+            {
+                Teams = result;
+            }
+        }
+
+        public async Task GetDifficulty()
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<Difficulty>>("https://localhost:7126/api/superheroes/difficulties");
+            if (result != null)
+            {
+                Difficulties = result;
+            }
         }
 
     }

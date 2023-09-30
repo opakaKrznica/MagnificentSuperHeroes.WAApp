@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MagnificentSuperHeroes.ServerAPI.MSHBase;
@@ -20,104 +16,174 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
             _context = context;
         }
 
-        // GET: api/SuperHeroes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SuperHero>>> GetSuperHeroes()
         {
-          if (_context.SuperHeroes == null)
-          {
-              return NotFound();
-          }
-            return await _context.SuperHeroes.ToListAsync();
-        }
-
-        // GET: api/SuperHeroes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<SuperHero>> GetSuperHero(int id)
-        {
-          if (_context.SuperHeroes == null)
-          {
-              return NotFound();
-          }
-            var superHero = await _context.SuperHeroes.FindAsync(id);
-
-            if (superHero == null)
+            var heroes = await _context.SuperHeroes
+              .Include(h => h.Comic)
+              .Include(h => h.Team)
+              .Include(h => h.Difficulty)
+              .ToListAsync();
+           
+            if (_context.SuperHeroes == null)
             {
                 return NotFound();
             }
+            return Ok(heroes);
+            //return await _context.SuperHeroes.ToListAsync();
+        }
+       
+        [HttpGet("{id}")]
+        public async Task<ActionResult<SuperHero>> GetSuperHero(int id)
+        {
+            var hero = await _context.SuperHeroes
+               .Include(h => h.Comic)
+               .Include(h => h.Team)
+               .Include(h => h.Difficulty)
+               .FirstOrDefaultAsync(h => h.Id == id);
+            if (hero == null)
+            {
+                return NotFound("Sorry, no heroes here. :/");
+            }
+            return Ok(hero);
+            //if (_context.SuperHeroes == null)
+            //{
+            //    return NotFound();
+            //}
+            //var superHero = await _context.SuperHeroes.FindAsync(id);
 
-            return superHero;
+            //if (superHero == null)
+            //{
+            //    return NotFound();
+            //}
+            //return superHero;
         }
 
-        // PUT: api/SuperHeroes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSuperHero(int id, SuperHero superHero)
+        public async Task<ActionResult<SuperHero>> PutSuperHero(int id, SuperHero hero)
         {
-            if (id != superHero.Id)
-            {
-                return BadRequest();
-            }
+            var dbHero = await _context.SuperHeroes
+                          .Include(h => h.Comic)
+                         .Include(h => h.Team)
+                         .Include(h => h.Difficulty)
+                         .FirstOrDefaultAsync(h => h.Id == id);
 
-            _context.Entry(superHero).State = EntityState.Modified;
+            if (dbHero == null)
+                return NotFound("Sorry, no Hero for you. :/");
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SuperHeroExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            dbHero.Name = hero.Name;
+            dbHero.HeroName = hero.HeroName;
+            dbHero.Bio = hero.Bio;
+            dbHero.BirthDate = hero.BirthDate;
+            dbHero.TeamId = hero.TeamId;
+            dbHero.ComicId = hero.ComicId;
+            dbHero.DifficultyId = hero.DifficultyId;
+            dbHero.IsReadyToFight = hero.IsReadyToFight;
+            dbHero.Image = hero.Image;
 
-            return NoContent();
+            await _context.SaveChangesAsync();
+
+            return Ok(await GetDbHeroes());
         }
 
         // POST: api/SuperHeroes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<SuperHero>> PostSuperHero(SuperHero superHero)
+        public async Task<ActionResult<SuperHero>> PostSuperHero(SuperHero hero)
         {
-          if (_context.SuperHeroes == null)
-          {
-              return Problem("Entity set 'MagSuperHeroContext.SuperHeroes'  is null.");
-          }
-            _context.SuperHeroes.Add(superHero);
+            hero.Comic = null;
+            hero.Team = null;
+            hero.Difficulty = null;
+            _context.SuperHeroes.Add(hero);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetSuperHero", new { id = superHero.Id }, superHero);
+            return Ok(await GetDbHeroes());
+            //if (_context.SuperHeroes == null)
+            //{
+            //    return Problem("Entity set 'MagSuperHeroContext.SuperHeroes'  is null.");
+            //}
+            //_context.SuperHeroes.Add(superHero);
+            //await _context.SaveChangesAsync();
+
+            //return CreatedAtAction("GetSuperHero", new { id = superHero.Id }, superHero);
         }
 
         // DELETE: api/SuperHeroes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSuperHero(int id)
         {
-            if (_context.SuperHeroes == null)
-            {
-                return NotFound();
-            }
-            var superHero = await _context.SuperHeroes.FindAsync(id);
-            if (superHero == null)
-            {
-                return NotFound();
-            }
+            var dbHero = await _context.SuperHeroes
+                  .Include(h => h.Comic)
+                  .Include(h => h.Team)
+                  .Include(h => h.Difficulty)
+                  .FirstOrDefaultAsync(sh => sh.Id == id);
 
-            _context.SuperHeroes.Remove(superHero);
+            if (dbHero == null)
+                return NotFound("Sorry, no Hero for you. :/");
+
+            _context.SuperHeroes.Remove(dbHero);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(await GetDbHeroes());
+            //if (_context.SuperHeroes == null)
+            //{
+            //    return NotFound();
+            //}
+            //var superHero = await _context.SuperHeroes.FindAsync(id);
+            //if (superHero == null)
+            //{
+            //    return NotFound();
+            //}
+
+            //_context.SuperHeroes.Remove(superHero);
+            //await _context.SaveChangesAsync();
+
+            //return NoContent();
         }
 
-        private bool SuperHeroExists(int id)
+        private async Task<List<SuperHero>> GetDbHeroes()
         {
-            return (_context.SuperHeroes?.Any(e => e.Id == id)).GetValueOrDefault();
+            return await _context.SuperHeroes
+                .Include(sh => sh.Comic)
+                .Include(h => h.Team)
+                .Include(hx => hx.Difficulty)
+                .ToListAsync();
+        }
+
+        //private bool SuperHeroExists(int id)
+        //{
+        //    return (_context.SuperHeroes?.Any(e => e.Id == id)).GetValueOrDefault();
+        //}
+
+
+        [HttpGet("comics")]
+        public async Task<ActionResult<IEnumerable<Comic>>> GetComics()
+        {
+            if (_context.Comics == null)
+            {
+                return NotFound();
+            }
+            return await _context.Comics.ToListAsync();
+        }
+
+        [HttpGet("teams")]
+        public async Task<ActionResult<IEnumerable<Team>>> GetTeams()
+        {
+            if (_context.Teams == null)
+            {
+                return NotFound();
+            }
+            return await _context.Teams.ToListAsync();
+        }
+
+        [HttpGet("difficulties")]
+        public async Task<ActionResult<IEnumerable<Difficulty>>> GetDifficulty()
+        {
+            if (_context.Difficulties == null)
+            {
+                return NotFound();
+            }
+            return await _context.Difficulties.ToListAsync();
         }
     }
 }

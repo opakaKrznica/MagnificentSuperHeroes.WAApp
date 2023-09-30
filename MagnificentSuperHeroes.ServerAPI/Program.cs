@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var dbConnectionString = builder.Configuration.
-    GetValue<string>("ConnectionString");
+    GetValue<string>("DefaultConnection");
 
 // Add services to the container.
 builder.Services.AddDbContext<MagSuperHeroContext>
@@ -11,6 +11,9 @@ builder.Services.AddDbContext<MagSuperHeroContext>
     UseSqlServer(dbConnectionString));
 
 builder.Services.AddControllers();
+
+builder.Services.AddDirectoryBrowser();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -23,6 +26,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(x => x
+                 .AllowCredentials()
+                 .AllowAnyHeader()
+                 .AllowAnyMethod()
+                 .SetIsOriginAllowed(origin => true));
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
