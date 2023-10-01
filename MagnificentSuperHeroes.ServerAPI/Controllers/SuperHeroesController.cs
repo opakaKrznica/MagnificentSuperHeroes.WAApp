@@ -30,7 +30,7 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
                 return NotFound();
             }
             return Ok(heroes);
-            //return await _context.SuperHeroes.ToListAsync();
+            
         }
        
         [HttpGet("{id}")]
@@ -46,17 +46,7 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
                 return NotFound("Sorry, no heroes here. :/");
             }
             return Ok(hero);
-            //if (_context.SuperHeroes == null)
-            //{
-            //    return NotFound();
-            //}
-            //var superHero = await _context.SuperHeroes.FindAsync(id);
-
-            //if (superHero == null)
-            //{
-            //    return NotFound();
-            //}
-            //return superHero;
+        
         }
 
         [HttpPut("{id}")]
@@ -86,8 +76,6 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
             return Ok(await GetDbHeroes());
         }
 
-        // POST: api/SuperHeroes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<SuperHero>> PostSuperHero(SuperHero hero)
         {
@@ -98,17 +86,10 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(await GetDbHeroes());
-            //if (_context.SuperHeroes == null)
-            //{
-            //    return Problem("Entity set 'MagSuperHeroContext.SuperHeroes'  is null.");
-            //}
-            //_context.SuperHeroes.Add(superHero);
-            //await _context.SaveChangesAsync();
-
-            //return CreatedAtAction("GetSuperHero", new { id = superHero.Id }, superHero);
+            
         }
 
-        // DELETE: api/SuperHeroes/5
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSuperHero(int id)
         {
@@ -125,20 +106,7 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(await GetDbHeroes());
-            //if (_context.SuperHeroes == null)
-            //{
-            //    return NotFound();
-            //}
-            //var superHero = await _context.SuperHeroes.FindAsync(id);
-            //if (superHero == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //_context.SuperHeroes.Remove(superHero);
-            //await _context.SaveChangesAsync();
-
-            //return NoContent();
+          
         }
 
         private async Task<List<SuperHero>> GetDbHeroes()
@@ -148,12 +116,7 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
                 .Include(h => h.Team)
                 .Include(hx => hx.Difficulty)
                 .ToListAsync();
-        }
-
-        //private bool SuperHeroExists(int id)
-        //{
-        //    return (_context.SuperHeroes?.Any(e => e.Id == id)).GetValueOrDefault();
-        //}
+        }   
 
 
         [HttpGet("comics")]

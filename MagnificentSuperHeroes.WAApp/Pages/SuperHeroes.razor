@@ -88,9 +88,7 @@
     [Parameter]
     public int? Id { get; set; }
     private bool _showCard = false;
-   // string onlyDate = default;
-    //DateTime onlDat = new DateTime();
-
+  
    SuperHero hero = new SuperHero()
         {
             Comic = new Comic(),
@@ -119,14 +117,6 @@
         await SuperHeroService.DeleteSuperHero(hero.Id);
         _showCard = false;
     }
-
-    //private async Task OnlyDate()
-    //{
-    //    DateTime heroBirth = SuperHeroService.Hero.BirthDate;
-    //    var oD = heroBirth.Date.ToString("MM/dd/yyyy");
-    //    onlyDate = oD;
-
-    //}
 
     void EditHero(int id)
     {

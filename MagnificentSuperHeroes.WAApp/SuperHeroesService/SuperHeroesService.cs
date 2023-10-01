@@ -24,7 +24,7 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task GetSuperHeroes()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<SuperHero>>("https://localhost:7126/api/superheroes");
+            var result = await _httpClient.GetFromJsonAsync<List<SuperHero>>($"{Constants.BaseUrl}superheroes");
             if (result != null)
             {
                 SuperHeroes = result;
@@ -33,13 +33,13 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task CreateSuperHero(SuperHero hero)
         {
-            var result = await _httpClient.PostAsJsonAsync("https://localhost:7126/api/superheroes", hero);
+            var result = await _httpClient.PostAsJsonAsync($"{Constants.BaseUrl}superheroes", hero);
             await SetSuperHeroes(result);
         }
         
         public async Task<SuperHero> GetSingleHero(int id)
         {
-            var result = await _httpClient.GetFromJsonAsync<SuperHero>($"https://localhost:7126/api/superheroes/{id}");
+            var result = await _httpClient.GetFromJsonAsync<SuperHero>($"{Constants.BaseUrl}superheroes/{id}");
             if (result != null)
             {
                 return result;
@@ -52,13 +52,13 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task DeleteSuperHero(int id)
         {
-            var result = await _httpClient.DeleteAsync($"https://localhost:7126/api/superheroes/{id}");
+            var result = await _httpClient.DeleteAsync($"{Constants.BaseUrl}superheroes/{id}");
             await SetSuperHeroes(result);
         }
 
         public async Task UpdateSuperHero(SuperHero hero)
         {
-            var result = await _httpClient.PutAsJsonAsync($"https://localhost:7126/api/superheroes/{hero.Id}", hero);
+            var result = await _httpClient.PutAsJsonAsync($"{Constants.BaseUrl}superheroes/{hero.Id}", hero);
             await SetSuperHeroes(result);
         }
 
@@ -71,7 +71,7 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task GetComic()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Comic>>("https://localhost:7126/api/superheroes/comics");
+            var result = await _httpClient.GetFromJsonAsync<List<Comic>>($"{Constants.BaseUrl}superheroes/comics");
             if (result != null)
             {
                 Comics = result;
@@ -80,7 +80,7 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task GetTeam()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Team>>("https://localhost:7126/api/superheroes/teams");
+            var result = await _httpClient.GetFromJsonAsync<List<Team>>($"{Constants.BaseUrl}superheroes/teams");
             if (result != null)
             {
                 Teams = result;
@@ -89,7 +89,7 @@ namespace MagnificentSuperHeroes.WAApp.SuperHeroesService
 
         public async Task GetDifficulty()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Difficulty>>("https://localhost:7126/api/superheroes/difficulties");
+            var result = await _httpClient.GetFromJsonAsync<List<Difficulty>>($"{Constants.BaseUrl}superheroes/difficulties");
             if (result != null)
             {
                 Difficulties = result;
