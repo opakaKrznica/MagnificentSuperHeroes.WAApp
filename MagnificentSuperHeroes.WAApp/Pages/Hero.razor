@@ -3,6 +3,9 @@
 
 @inject ISuperHeroesService SuperHeroesService
 @inject NavigationManager NavManager
+@inject HttpClient Http;
+@using System.IO;
+@inject IJSRuntime ijsRun;
 
 
 
@@ -61,22 +64,34 @@ else
             <MudCheckBox Class="mb-6 " Label="Ready to Fight" @bind-Checked="@hero.IsReadyToFight"
                          Color="Color.Primary"></MudCheckBox>            
             <br />
-            <InputFile Class="invisible" id="fileInput" OnChange="OnFileChange" />
+            <InputFile  id="fileInput" OnChange="OnFileChange" />
+            <MudText Typo="Typo.h6" Class="mb-n6" Align="Align.Center">@Message</MudText>
             <br />
-            <MudButton HtmlTag="label"
+
+            <MudButton ButtonType="ButtonType.Submit"  HtmlTag="label"
             Variant="Variant.Filled"
             Color="Color.Primary"
             StartIcon="@Icons.Filled.CloudUpload"
-            for="fileInput">
+            >
             Upload Image
             </MudButton>
                        <br />
             <MudImage Src="@hero.Image" Elevation="25" Width="200" Height="150" Class="rounded my-2"></MudImage>
         </MudCardContent>
-    </MudCard>  
+    </MudCard>
+    <div>
+        
+            @{var images = superHeroesImages.Where(x => x.SuperHeroId == hero.Id).ToList();
+            foreach (var image in images)
+            {
+                <img class="card-img-top img-thumbnail mx-auto d-block w-75 " src=@image.imagePath alt="neka slika..">
+            }
+            }
+        
+    </div>
     <MudGrid>
         <MudItem Class="xs-3">
-        <MudButton  ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Primary">
+            <MudButton ButtonType="ButtonType.Submit" @onsubmit="OnSubmit" Variant="Variant.Text" Color="Color.Primary">
             @btnTxt
     </MudButton>
     </MudItem>
@@ -102,8 +117,13 @@ else
     [Parameter]
     public int? Id { get; set; }
     string btnTxt = string.Empty;
+    string Message = "No file(s) selected";
     bool isNew = true;
+   
 
+    IReadOnlyList<IBrowserFile> selectedFiles;
+    private List<ImageFilePath> superHeroesImages = new List<ImageFilePath>();
+    List<SuperHero> heroes = new List<SuperHero>();
     SuperHero hero = new SuperHero 
         {
             Comic = new Comic(),
@@ -118,13 +138,24 @@ else
         await SuperHeroesService.GetDifficulty();
         await SuperHeroesService.GetTeam();
 
+        var result = await Http.GetAsync($"{Constants.BaseUrl}SuperHeroes");
+
+        if (result.IsSuccessStatusCode)
+        {
+            heroes = await result.Content.ReadFromJsonAsync<List<SuperHero>>();
+
+            foreach (var item in heroes)
+            {
+                var getImg = await GetImages(item.Id);
+                superHeroesImages.AddRange(getImg);
+            }
+        }
     }
 
     protected override async Task OnParametersSetAsync()
     {
         if (Id == null)
         {
-
             hero.Comic = SuperHeroesService.Comics[0];
             hero.ComicId = hero.Comic.Id;
             hero.Team = SuperHeroesService.Teams[0];
@@ -140,12 +171,48 @@ else
 
     public async Task OnFileChange(InputFileChangeEventArgs e)
     {
-        var format = "image/png";
-        var resizedImage = await e.File.RequestImageFileAsync(format, 200, 200);
-        var buffer = new byte[resizedImage.Size];
-        await resizedImage.OpenReadStream().ReadAsync(buffer);
-        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-        hero.Image = imageData;
+
+        selectedFiles = e.GetMultipleFiles();
+        Message = $"{selectedFiles.Count} file(s) selected";
+        this.StateHasChanged();
+
+        //var format = "image/png";
+        //var resizedImage = await e.File.RequestImageFileAsync(format, 200, 200);
+        //var buffer = new byte[resizedImage.Size];
+        //await resizedImage.OpenReadStream().ReadAsync(buffer);
+        //var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        //hero.Image = imageData;
+    }
+
+    private async void OnSubmit()
+    {
+        if (selectedFiles.Count == 0)
+        {
+            await ijsRun.InvokeVoidAsync("alert", "Nothing choosen, try harder!!!");
+        }
+        foreach (var file in selectedFiles)
+        {
+            Stream stream = file.OpenReadStream();
+            MemoryStream ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            stream.Close();
+
+            UploadedFile uploadFile = new UploadedFile();
+            uploadFile.FileName = file.Name;
+            uploadFile.SuperHeroId = Id;
+            uploadFile.FileContent = ms.ToArray();
+            ms.Close();
+
+            var upload = await Http.PostAsJsonAsync<UploadedFile>($"{Constants.BaseUrl}FilesUpload", uploadFile);
+
+            if (upload.IsSuccessStatusCode)
+            {
+                await ijsRun.InvokeVoidAsync("alert", "You successfully Uploaded files!!!");
+            }
+
+        }
+
+        this.StateHasChanged();
     }
 
     private async Task HandleSubmit()
@@ -158,6 +225,17 @@ else
         {
             await SuperHeroesService.UpdateSuperHero(hero);            
         }
+    }
+
+    public async Task<List<ImageFilePath>> GetImages(int Id)
+    {
+        var apiResult = await Http.GetAsync($"{Constants.BaseUrl}/FileUpload/get-SuperHero-photos/{Id}");
+        var images = new List<ImageFilePath>();
+        if (apiResult.IsSuccessStatusCode)
+        {
+            images = await apiResult.Content.ReadFromJsonAsync<List<ImageFilePath>>();
+        }
+        return images;
     }
 
     private async Task DeleteHero()

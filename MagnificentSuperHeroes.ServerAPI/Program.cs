@@ -1,5 +1,6 @@
 using MagnificentSuperHeroes.ServerAPI.MSHBase;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 var dbConnectionString = builder.Configuration.
@@ -34,6 +35,18 @@ app.UseCors(x => x
                  .SetIsOriginAllowed(origin => true));
 
 app.UseStaticFiles();
+
+app.UseFileServer(
+    new FileServerOptions
+    {
+        FileProvider = new 
+        PhysicalFileProvider(
+            Path.Combine(builder.Environment.ContentRootPath
+            ,"SuperHeroPics")),
+        RequestPath = "/SuperHeroPics",
+        EnableDirectoryBrowsing = true
+    }
+    );
 
 app.UseHttpsRedirection();
 

@@ -53,7 +53,7 @@ namespace MagnificentSuperHeroes.ServerAPI.Controllers
         public async Task<ActionResult<SuperHero>> PutSuperHero(int id, SuperHero hero)
         {
             var dbHero = await _context.SuperHeroes
-                          .Include(h => h.Comic)
+                         .Include(h => h.Comic)
                          .Include(h => h.Team)
                          .Include(h => h.Difficulty)
                          .FirstOrDefaultAsync(h => h.Id == id);
